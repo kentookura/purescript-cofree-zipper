@@ -42,6 +42,9 @@ import Data.Tuple (Tuple, fst)
 import Data.Tuple.Nested ((/\))
 import Control.Comonad.Cofree ((:<), Cofree, head, tail, buildCofree)
 import Data.Lens (Lens', lens)
+import Data.Lens.Fold ((^?))
+import Data.Lens.Index (ix)
+import Data.Lens.Setter ((.~))
 import Matryoshka.Class.Recursive (class Recursive, project)
 import Matryoshka.Class.Corecursive (class Corecursive, embed)
 
@@ -94,15 +97,15 @@ zipper f = Zipper Nil f
 fromRecursive :: forall t f i a. Recursive t f => t -> Zipper i f Unit
 fromRecursive t = zipper $ buildCofree ((unit /\ _) <<< project) t
 
--- | Createa a zipper from a recursive type, given a function to generate annotations.
+-- | Create a a zipper from a recursive type, given a function to generate annotations.
 tagged :: forall t f i a. Recursive t f => (t -> a) -> t -> Zipper i f a
 tagged f t = zipper $ buildCofree (\x -> (f x /\ project x)) t
 
---down :: forall i f a. i -> Zipper i f a -> Maybe (Zipper i f a)
---down i (Zipper parents current) = Zipper ((i /\ current) : parents) <$>  (current ^? _unwrap . ix i)
-
---up :: forall i f a. Zipper i f a -> Maybe (Zipper i f a)
---up (Zipper ((i /\ p) : parents) current) = Just $ Zipper parents (p # _unwrap . ix i .~ current)
+down :: forall i f a. i -> Zipper i f a -> Maybe (Zipper i f a)
+down i (Zipper parents current) = Zipper ((i /\ current) : parents) <$>  (current ^? _unwrap <<< ix i)
+--
+up :: forall i f a. Zipper i f a -> Maybe (Zipper i f a)
+up (Zipper ((i /\ p) : parents) current) = Just $ Zipper parents (p # _unwrap <<< ix i .~ current)
 
 
 --rezip :: forall i f a. Zipper i f a -> Cofree f a
