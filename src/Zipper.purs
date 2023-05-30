@@ -1,4 +1,4 @@
-module Control.Comonad.Cofree.Zipper.Internal 
+module Control.Comonad.Cofree.Zipper
   ( Zipper
   --, Idx
 
@@ -59,37 +59,46 @@ derive instance (Eq i, Eq1 f, Eq a) => Eq (Zipper i f a)
 derive instance (Ord i, Ord1 f, Ord a) => Ord (Zipper i f a)
 
 -- | Get the location of the current selection within its parent if we have one
---
--- | @O(1)@
+-- |
+-- | O(1)
 currentIndex :: forall i f a. Zipper i f a -> Maybe i
 currentIndex (Zipper ((i /\ _) : _) _ ) = Just i
 currentIndex _ = Nothing
 
--- |
+-- | Get the path to the current value from the root of the structure
+-- | 
+-- | O(depth)
 currentPath :: forall i f a. Zipper i f a -> List i
 currentPath (Zipper parents focus) = reverse $ map fst parents
 
 --focus_ :: forall i f a. Lens' (Zipper i f a) a
 --focus_ f (Zipper parents focus) = Zipper parents <$>  (focus # _extract `id` f)
 
-id :: forall a. a -> a
-id x = x
---
+
 --unwrapped_ :: forall i f a. Lens' (Zipper i f a) (Cofree f a)
 --unwrapped_ f (Zipper parents focus) = Zipper parents <$> f focus
 
 _extract :: forall f g a. Functor f => (a -> f a) -> Cofree g a -> f (Cofree g a)
 _extract f t = (flip (:<) (tail t)) <$> (f $ head t)
 
+-- | A useful combinator for chaining operatiosn which might fail
+-- | If an operation fails, the original zipper is returned.
+-- | 
+-- | E.g.
+-- | 
+-- | `tug up z`
 tug :: forall a. (a -> Maybe a) -> a -> a
 tug f a = fromMaybe a (f a)
 
+-- | Create a zipper over a cofree structure
 zipper :: forall i f a. Cofree f a -> Zipper i f a
 zipper f = Zipper Nil f
 
+-- | Create a zipper from a recursive type, given a function to generate annotations.
 fromRecursive :: forall t f i a. Recursive t f => t -> Zipper i f Unit
 fromRecursive t = zipper $ buildCofree ((unit /\ _) <<< project) t
 
+-- | Createa a zipper from a recursive type, given a function to generate annotations.
 tagged :: forall t f i a. Recursive t f => (t -> a) -> t -> Zipper i f a
 tagged f t = zipper $ buildCofree (\x -> (f x /\ project x)) t
 
@@ -116,9 +125,13 @@ tagged f t = zipper $ buildCofree (\x -> (f x /\ project x)) t
 --children_ f (Zipper parents current) = Zipper parents <$> (?w)
 --children_ f (Zipper parents current) = Zipper parents <$> (current # _unwrap <<< (traversed id f))
 
+-- | Get the base-functor at the current location.
+-- |
+-- | O(1)
 branches :: forall i f a. Zipper i f a -> f (Cofree f a)
 branches (Zipper _ t) = tail t
 
+-- | A lens over the base functor at the current location
 branches_ :: forall i f a. Lens' (Zipper i f a) (f (Cofree f a))
 branches_ = lens getter setter
   where
