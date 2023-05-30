@@ -2,7 +2,6 @@
 , dependencies =
   [ "console"
   , "effect"
-  , "foldable-traversable"
   , "free"
   , "leibniz"
   , "lists"
@@ -11,7 +10,6 @@
   , "prelude"
   , "profunctor-lenses"
   , "tuples"
-  , "type-equality"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

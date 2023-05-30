@@ -37,17 +37,13 @@ import Data.List (List(..), (:), reverse)
 import Data.Leibniz (type (~))
 import Data.Eq (class Eq1)
 import Data.Ord (class Ord1)
-import Data.Functor
-import Data.Traversable (class Traversable)
-import Data.Maybe
-import Data.Tuple
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Tuple (Tuple, fst)
 import Data.Tuple.Nested ((/\))
 import Control.Comonad.Cofree ((:<), Cofree, head, tail, buildCofree)
-import Data.Lens
-import Data.Lens.Index (class Index)
+import Data.Lens (Lens', lens)
 import Matryoshka.Class.Recursive (class Recursive, project)
 import Matryoshka.Class.Corecursive (class Corecursive, embed)
-import Matryoshka (cata)
 
 --type Idx i f a = (Index (Tuple (f (Cofree f a)) IxValue (f (Cofree f a))) ~ (Tuple (Cofree f a) Index (f (Cofree f a)) ~ i))
 
